@@ -1,0 +1,16 @@
+﻿<div style="border: 1px solid red;">
+  <h3>Dummy</h3>
+
+  Current count : @count  
+</div>
+
+<MediatorHandler OnCounterChanged="OnCounterChanged" />
+
+@code {
+  private int count;
+  
+  void OnCounterChanged(int count)
+  {
+    this.count = count;
+  }
+}
