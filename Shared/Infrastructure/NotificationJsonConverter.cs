@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using System.Linq;
 using System.Text.Json;
 
-namespace RemiBou.BlogPost.SignalR.Shared
+namespace RemiBou.BlogPost.SignalR.Shared.Infrastructure
 {
   public class NotificationJsonConverter : JsonConverter<SerializedNotification>
   {

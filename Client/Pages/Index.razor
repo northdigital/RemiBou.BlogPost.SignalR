@@ -1,31 +1,27 @@
 ﻿@page "/"
-@using RemiBou.BlogPost.SignalR.Shared
-@using MediatR
-@implements INotificationHandler<CounterIncremented>
-@implements IDisposable
+
+<MediatorHandler OnCounterChanged="OnCounterChanged" 
+                 OnDateChanged="OnDateChanged" />
 
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
 
 Current count : @count
+<hr />
+Current date : @date
+
 @code {
   private int count;
-  protected override void OnInitialized()
+  private DateTime date;
+
+  void OnCounterChanged(int count)
   {
-    DynamicNotificationHandlers.Register(this);
+    this.count = count;
   }
 
-  public Task Handle(CounterIncremented notification, System.Threading.CancellationToken cancellationToken)
+  void OnDateChanged(DateTime date)
   {
-    count = notification.Counter;
-    StateHasChanged();
-
-    return Task.CompletedTask;
-  }
-
-  public void Dispose()
-  {
-    DynamicNotificationHandlers.Unregister(this);
+    this.date = date;
   }
 }

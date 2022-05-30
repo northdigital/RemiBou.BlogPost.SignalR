@@ -5,11 +5,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace RemiBou.BlogPost.SignalR.Shared
+namespace RemiBou.BlogPost.SignalR.Shared.Infrastructure
 {
   public static class DynamicNotificationHandlers
   {
-    private static Dictionary<Type, List<(object, Func<SerializedNotification, Task>)>> _handlers = new Dictionary<Type, List<(object, Func<SerializedNotification, Task>)>>();
+    private static Dictionary<Type, List<(object, Func<SerializedNotification, Task>)>> _handlers 
+      = new Dictionary<Type, List<(object, Func<SerializedNotification, Task>)>>();
 
     public static void Register<T>(INotificationHandler<T> handler) where T : SerializedNotification
     {
@@ -33,10 +34,19 @@ namespace RemiBou.BlogPost.SignalR.Shared
             _handlers.Add(notificationType, handlers);
           }
 
-          handlers.Add((handler, async s => await handler.Handle((T)s, default(CancellationToken))));
+          try
+          {
+            handlers.Add((handler, async s => 
+            await handler.Handle((T)s, default(CancellationToken))));
+          }
+          catch(Exception ex)
+          {
+            Console.WriteLine(ex.Message);
+          }
         }
       }
     }
+
     public static void Unregister<T>(INotificationHandler<T> handler) where T : SerializedNotification
     {
       lock (_handlers)
@@ -58,7 +68,14 @@ namespace RemiBou.BlogPost.SignalR.Shared
         {
           foreach (var item in filtered)
           {
-            await item.Item2(notification);
+            try
+            {
+              await item.Item2(notification);
+            }
+            catch (Exception ex)
+            {
+              Console.WriteLine(ex.Message);
+            }
           }
         }
       }

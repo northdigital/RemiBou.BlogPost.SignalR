@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
-using RemiBou.BlogPost.SignalR.Shared;
+using RemiBou.BlogPost.SignalR.Shared.Infrastructure;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -25,6 +25,11 @@ namespace RemiBou.BlogPost.SignalR.Client
         .Build();
 
       hubConnection.On<SerializedNotification>("Notification", async (notificationJson) =>
+      {
+        await DynamicNotificationHandlers.Publish(notificationJson);
+      });
+
+      hubConnection.On<SerializedNotification>("Date", async (notificationJson) =>
       {
         await DynamicNotificationHandlers.Publish(notificationJson);
       });

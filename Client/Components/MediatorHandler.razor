@@ -1,0 +1,33 @@
+﻿@implements INotificationHandler<CounterIncremented>
+@implements INotificationHandler<DateTimeChanged>
+@implements IDisposable
+
+@code {
+  [Parameter]
+  public EventCallback<int> OnCounterChanged { get; set; }
+
+  [Parameter]
+  public EventCallback<DateTime> OnDateChanged { get; set; }
+
+  protected override void OnInitialized()
+  {
+    DynamicNotificationHandlers.Register<CounterIncremented>(this);
+    DynamicNotificationHandlers.Register<DateTimeChanged>(this);
+  }
+
+  public void Dispose()
+  {
+    DynamicNotificationHandlers.Unregister<CounterIncremented>(this);
+    DynamicNotificationHandlers.Unregister<DateTimeChanged>(this);
+  }
+
+  public async Task Handle(CounterIncremented notification, CancellationToken cancellationToken)
+  {
+    await OnCounterChanged.InvokeAsync(notification.Counter);
+  }
+
+  public async Task Handle(DateTimeChanged notification, CancellationToken cancellationToken)
+  {
+    await OnDateChanged.InvokeAsync(notification.CurrentDate);
+  }
+}
