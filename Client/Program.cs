@@ -29,11 +29,6 @@ namespace RemiBou.BlogPost.SignalR.Client
         await DynamicNotificationHandlers.Publish(notificationJson);
       });
 
-      hubConnection.On<SerializedNotification>("Date", async (notificationJson) =>
-      {
-        await DynamicNotificationHandlers.Publish(notificationJson);
-      });
-
       await hubConnection.StartAsync();
       await app.RunAsync();
     }

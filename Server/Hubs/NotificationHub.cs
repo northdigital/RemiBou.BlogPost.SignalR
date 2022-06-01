@@ -38,7 +38,7 @@ namespace RemiBou.BlogPost.SignalR.Server.Hubs
 
     private async Task SendDateTimeChangedNotification(SerializedNotification notification)
     {
-      await _hubContext.Clients.All.SendAsync("Date", notification);
+      await _hubContext.Clients.All.SendAsync("Notification", notification);
     }
   }
 }
