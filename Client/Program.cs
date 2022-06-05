@@ -17,6 +17,8 @@ namespace RemiBou.BlogPost.SignalR.Client
       builder.RootComponents.Add<App>("app");
       builder.Services.AddTransient(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
+      builder.Services.AddSingleton<IEventAggregator, EventAggregator>();
+
       var app = builder.Build();
       var navigationManager = app.Services.GetRequiredService<NavigationManager>();
       var hubConnection = new HubConnectionBuilder()
@@ -24,9 +26,11 @@ namespace RemiBou.BlogPost.SignalR.Client
         .AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(new NotificationJsonConverter()))
         .Build();
 
+      var eventAggregator = app.Services.GetRequiredService<IEventAggregator>();
+
       hubConnection.On<SerializedNotification>("Notification", async (notificationJson) =>
       {
-        await DynamicNotificationHandlers.Publish(notificationJson);
+        await eventAggregator.PublishAsync(notificationJson);
       });
 
       await hubConnection.StartAsync();
