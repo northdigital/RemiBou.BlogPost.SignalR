@@ -9,10 +9,11 @@ namespace RemiBou.BlogPost.SignalR.Shared.Infrastructure
 {
   public static class DynamicNotificationHandlers
   {
-    private static Dictionary<Type, List<(object, Func<SerializedNotification, Task>)>> _handlers 
+    private static Dictionary<Type, List<(object notificationType, Func<SerializedNotification, Task> handler)>> _handlers 
       = new Dictionary<Type, List<(object, Func<SerializedNotification, Task>)>>();
 
-    public static void Register<T>(INotificationHandler<T> handler) where T : SerializedNotification
+    public static void Register<T>(INotificationHandler<T> handler) 
+      where T : SerializedNotification
     {
       lock (_handlers)
       {
@@ -24,9 +25,9 @@ namespace RemiBou.BlogPost.SignalR.Shared.Infrastructure
               x.GetGenericTypeDefinition() == typeof(INotificationHandler<>))
           .ToList();
 
-        foreach (var item in handlerInterfaces)
+        foreach (var handlerInterface in handlerInterfaces)
         {
-          var notificationType = item.GenericTypeArguments.First();
+          var notificationType = handlerInterface.GenericTypeArguments.First();
 
           if (!_handlers.TryGetValue(notificationType, out var handlers))
           {
@@ -36,8 +37,15 @@ namespace RemiBou.BlogPost.SignalR.Shared.Infrastructure
 
           try
           {
-            handlers.Add((handler, async s => 
-            await handler.Handle((T)s, default(CancellationToken))));
+            handlers.Add(
+            (
+              handler,
+              async (s) =>
+              {
+                if(s is T t)
+                  await handler.Handle(t, default);
+              }
+            ));
           }
           catch(Exception ex)
           {
@@ -51,9 +59,9 @@ namespace RemiBou.BlogPost.SignalR.Shared.Infrastructure
     {
       lock (_handlers)
       {
-        foreach (var item in _handlers)
+        foreach (var _handler in _handlers)
         {
-          item.Value.RemoveAll(h => h.Item1.Equals(handler));
+          _handler.Value.RemoveAll(h => h.handler.Equals(handler));
         }
       }
     }
@@ -64,13 +72,13 @@ namespace RemiBou.BlogPost.SignalR.Shared.Infrastructure
       {
         var notificationType = notification.GetType();
 
-        if (_handlers.TryGetValue(notificationType, out var filtered))
+        if (_handlers.TryGetValue(notificationType, out var serializedNotoficationTypes))
         {
-          foreach (var item in filtered)
+          foreach (var serializedNotificationType in serializedNotoficationTypes)
           {
             try
             {
-              await item.Item2(notification);
+              await serializedNotificationType.handler(notification);
             }
             catch (Exception ex)
             {
